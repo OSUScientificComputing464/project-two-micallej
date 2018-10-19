@@ -14,11 +14,11 @@ HousingDataset = fetch_california_housing()
 XTrain,XTest,YTrain,YTest= train_test_split(HousingDataset['data'],HousingDataset['target'],random_state=0)
 CrossValidationScore = []
 
-'''
+
 #visualize data by each attribute
 HousingDataframe = pandas.DataFrame(XTrain,columns=HousingDataset.feature_names)
 grr = pandas.scatter_matrix(HousingDataframe,c=YTrain,figsize=(15,15),marker='o',hist_kwds={'bins':20},s=60,alpha=0.8)
-'''
+
 
 #LR
 LR = LinearRegression()
