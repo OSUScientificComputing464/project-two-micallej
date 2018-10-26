@@ -2,85 +2,115 @@
 import pandas
 import numpy
 import matplotlib.pyplot
+import seaborn
 from sklearn.datasets import fetch_california_housing
-from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import cross_val_score
-from sklearn.linear_model import LinearRegression,Lasso,Ridge,ElasticNet
+import sklearn.model_selection
+import sklearn.linear_model
+import sklearn.metrics
+import sklearn.preprocessing
 
 
+#0: 
 #prep
-HousingDataset = fetch_california_housing()
-XTrain,XTest,YTrain,YTest= train_test_split(HousingDataset['data'],HousingDataset['target'],random_state=0)
+HousingDataSet = fetch_california_housing()
+HousingDataFrame = pandas.DataFrame(HousingDataSet.data,columns=HousingDataSet.feature_names)
+HousingDataTarget = pandas.Series(HousingDataSet.target)
+
+Scaler = sklearn.preprocessing.StandardScaler()
+Scaler.fit(HousingDataFrame)
+HousingDataFrameScaled = Scaler.transform(HousingDataFrame)
+
+dataTrain, dataTest, targetTrain, targetTest = sklearn.model_selection.train_test_split(HousingDataFrame,HousingDataTarget,random_state=253)
+
+seaborn.set()
+matplotlib.pyplot.figure(0,figsize=(20, 50))
 CrossValidationScore = []
 
 
-#visualize data by each attribute
-HousingDataframe = pandas.DataFrame(XTrain,columns=HousingDataset.feature_names)
-grr = pandas.scatter_matrix(HousingDataframe,c=YTrain,figsize=(15,15),marker='o',hist_kwds={'bins':20},s=60,alpha=0.8)
+#1: 
+#univariate distribution
+i = 0
+for HousingNames in HousingDataFrame.columns:
+    i += 1
+    
+    matplotlib.pyplot.subplot(HousingDataFrame.columns.size, 3, i)
+    matplotlib.pyplot.plot(HousingDataFrame[HousingNames].value_counts().sort_index(), color = matplotlib.pyplot.cm.brg(i * 256 / 8))
+    matplotlib.pyplot.xlabel(HousingNames)
+    matplotlib.pyplot.ylabel("Frequency")
+matplotlib.pyplot.figure(1)
+matplotlib.pyplot.plot(HousingDataTarget.value_counts().sort_index())
 
 
+#2: 
+#feature dependency
+matplotlib.pyplot.figure(2,figsize=(20,50))
+i=0
+for HousingNames in HousingDataFrame.columns:
+    i += 1
+    
+    matplotlib.pyplot.subplot(HousingDataFrame.columns.size, 3, i)
+    matplotlib.pyplot.plot(HousingDataFrame[HousingNames],HousingDataTarget,'.',color = matplotlib.pyplot.cm.brg(i * 256 / 8))
+    matplotlib.pyplot.xlabel(HousingNames)
+    matplotlib.pyplot.ylabel("Home Value")
+
+matplotlib.pyplot.figure(3,figsize=(20,10))
+
+matplotlib.pyplot.subplot(121)
+matplotlib.pyplot.title("Data (unscaled)")
+matplotlib.pyplot.xlabel("Latitude")
+matplotlib.pyplot.ylabel("Home value")
+matplotlib.pyplot.plot(HousingDataFrameScaled['Latitude'],HousingDataTarget,'.')
+
+
+#
+#3: 
+#evaluating regression with SKLearn
 #LR
-LR = LinearRegression()
-LR.fit(XTrain,YTrain)
+modelLinearRegression = sklearn.linear_model.LinearRegression()
 
-PredictTrain = LR.predict(XTrain)
-PredictTest = LR.predict(XTest)
+scoreLinearRegression = sklearn.model_selection.cross_val_score(modelLinearRegression, HousingDataFrame,HousingDataTarget)
+scoreLinearRegressionScaled = sklearn.model_selection.cross_val_score(modelLinearRegression, HousingDataFrameScaled,HousingDataTarget)
 
-print("Fit a model X_train, and calculate mean-square-error with Y_train:", numpy.mean((YTrain - LR.predict(XTrain)) ** 2))
-
-matplotlib.pyplot.figure()
-matplotlib.pyplot.title("Linear Regression")
-matplotlib.pyplot.scatter(PredictTrain, PredictTrain-YTrain,c='b',s=40,alpha=0.5)
-matplotlib.pyplot.scatter(PredictTest, PredictTest-YTest,c='g',s=40,alpha=0.5)
-matplotlib.pyplot.hlines(y=0,xmin=0,xmax=10)
+print("Linear Regression accuracy: %0.2f (+- %0.2f)",(scoreLinearRegression.mean(),scoreLinearRegression.std()*2))
+print("Linear Regression scaled accuracy: %0.2f (+- %0.2f)",(scoreLinearRegressionScaled.mean(),scoreLinearRegressionScaled.std()*2))
 
 
 #Ride
-R = Ridge()
-R.fit(XTrain,YTrain)
+modelRidge = sklearn.linear_model.Ridge()
 
-PredictTrain = R.predict(XTrain)
-PredictTest = R.predict(XTest)
+scoreRidge = sklearn.model_selection.cross_val_score(modelRidge, HousingDataFrame,HousingDataTarget)
+scoreRidgeScaled = sklearn.model_selection.cross_val_score(modelRidge, HousingDataFrameScaled,HousingDataTarget)
 
-print("Fit a model X_train, and calculate mean-square-error with Y_train:", numpy.mean((YTrain - LR.predict(XTrain)) ** 2))
-
-matplotlib.pyplot.figure()
-matplotlib.pyplot.title("Ridge")
-matplotlib.pyplot.scatter(PredictTrain, PredictTrain-YTrain,c='b',s=40,alpha=0.5)
-matplotlib.pyplot.scatter(PredictTest, PredictTest-YTest,c='g',s=40,alpha=0.5)
-matplotlib.pyplot.hlines(y=0,xmin=0,xmax=10)
+print("Ridge accuracy: %0.2f (+- %0.2f)",(scoreRidge.mean(),scoreRidge.std()*2))
+print("Ridge scaled accuracy: %0.2f (+- %0.2f)",(scoreRidgeScaled.mean(),scoreRidgeScaled.std()*2))
 
 
 #Lasso
-L = Lasso()
-L.fit(XTrain,YTrain)
+modelLasso = sklearn.linear_model.Lasso()
 
-PredictTrain = L.predict(XTrain)
-PredictTest = L.predict(XTest)
+scoreLasso = sklearn.model_selection.cross_val_score(modelLasso, HousingDataFrame,HousingDataTarget)
+scoreLassoScaled = sklearn.model_selection.cross_val_score(modelLasso, HousingDataFrameScaled,HousingDataTarget)
 
-print("Fit a model X_train, and calculate mean-square-error with Y_train:", numpy.mean((YTrain - LR.predict(XTrain)) ** 2))
-
-matplotlib.pyplot.figure()
-matplotlib.pyplot.title("Lasso")
-matplotlib.pyplot.scatter(PredictTrain, PredictTrain-YTrain,c='b',s=40,alpha=0.5)
-matplotlib.pyplot.scatter(PredictTest, PredictTest-YTest,c='g',s=40,alpha=0.5)
-matplotlib.pyplot.hlines(y=0,xmin=0,xmax=10)
+print("Lasso accuracy: %0.2f (+- %0.2f)",(scoreLasso.mean(),scoreLasso.std()*2))
+print("Lasso scaled accuracy: %0.2f (+- %0.2f)",(scoreLassoScaled.mean(),scoreLassoScaled.std()*2))
 
 
 #ElasticNet
-EN = ElasticNet()
-EN.fit(XTrain,YTrain)
+modelElasticNet = sklearn.linear_model.ElasticNet()
 
-PredictTrain = EN.predict(XTrain)
-PredictTest = EN.predict(XTest)
+scoreElasticNet = sklearn.model_selection.cross_val_score(modelElasticNet, HousingDataFrame,HousingDataTarget)
+scoreElasticNetScaled = sklearn.model_selection.cross_val_score(modelElasticNet, HousingDataFrameScaled,HousingDataTarget)
 
-print("Fit a model X_train, and calculate mean-square-error with Y_train:", numpy.mean((YTrain - LR.predict(XTrain)) ** 2))
-matplotlib.pyplot.figure()
-matplotlib.pyplot.title("ElasticNet")
-matplotlib.pyplot.scatter(PredictTrain, PredictTrain-YTrain,c='b',s=40,alpha=0.5)
-matplotlib.pyplot.scatter(PredictTest, PredictTest-YTest,c='g',s=40,alpha=0.5)
-matplotlib.pyplot.hlines(y=0,xmin=0,xmax=10)
+print("Elastic Net accuracy: %0.2f (+- %0.2f)",(scoreElasticNet.mean(),scoreElasticNet.std()*2))
+print("Elastic Net scaled accuracy: %0.2f (+- %0.2f)",(scoreElasticNetScaled.mean(),scoreElasticNetScaled.std()*2))
+
+
+#
+#4:
+#finding the best parameters with gridsearchcv
+
+
 
 #show
 matplotlib.pyplot.show()
