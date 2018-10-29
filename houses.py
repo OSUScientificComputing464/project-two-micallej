@@ -28,7 +28,7 @@ matplotlib.pyplot.figure(0,figsize=(20, 50))
 CrossValidationScore = []
 
 
-#1: 
+#
 #univariate distribution
 i = 0
 for HousingNames in HousingDataFrame.columns:
@@ -42,7 +42,7 @@ matplotlib.pyplot.figure(1)
 matplotlib.pyplot.plot(HousingDataTarget.value_counts().sort_index())
 
 
-#2: 
+#
 #feature dependency
 matplotlib.pyplot.figure(2,figsize=(20,50))
 i=0
@@ -64,7 +64,6 @@ matplotlib.pyplot.plot(HousingDataFrameScaled['Latitude'],HousingDataTarget,'.')
 
 
 #
-#3: 
 #evaluating regression with SKLearn
 #LR
 modelLinearRegression = sklearn.linear_model.LinearRegression()
@@ -75,8 +74,41 @@ scoreLinearRegressionScaled = sklearn.model_selection.cross_val_score(modelLinea
 print("Linear Regression accuracy: %0.2f (+- %0.2f)",(scoreLinearRegression.mean(),scoreLinearRegression.std()*2))
 print("Linear Regression scaled accuracy: %0.2f (+- %0.2f)",(scoreLinearRegressionScaled.mean(),scoreLinearRegressionScaled.std()*2))
 
+crossValidationLinearRegression = sklearn.model_selection.crossValidationCV(sklearn.linear_model.LinearRegression(), param_grid = {
+    'fit_intercept': [False, True],
+    'alpha': numpy.linspace(0, 10, 100)
+})
+crossValidationLinearRegression.fit(HousingDataFrameScaled, HousingDataTarget)
 
-#Ride
+print("BEST FIT: ",str(crossValidationRidge.best_estimator_)
+print("BEST SCORE: %0.2f",crossValidationRidge.best_score_)
+
+gridSearchLinearRegression = pandas.DataFrame(crossValidationLinearRegression.cv_results)
+gridSearchLinearRegression
+
+matplotlib.pyplot.figure(4, figsize = (20, 10))
+
+matplotlib.pyplot.subplot(121)
+matplotlib.pyplot.title("Linear Regression Alpha Parameter Optimization\nwith Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchLinearRegression.loc[gs_LinearRegression.param_fit_intercept == True, ['param_alpha']],
+         gridSearchLinearRegression.loc[gridSearchLinearRegression.param_fit_intercept == True, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == True")
+
+matplotlib.pyplot.subplot(122)
+matplotlib.pyplot.title("Linear Regression Alpha Parameter Optimization\nwithout Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchLinearRegression.loc[gridSearchLinearRegression.param_fit_intercept == False, ['param_alpha']],
+         gridSearchLinearRegression.loc[gridSearchLinearRegression.param_fit_intercept == False, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == False",
+         color = matplotlib.pyplot.cm.brg(128))
+
+
+#Ridge
 modelRidge = sklearn.linear_model.Ridge()
 
 scoreRidge = sklearn.model_selection.cross_val_score(modelRidge, HousingDataFrame,HousingDataTarget)
@@ -84,6 +116,39 @@ scoreRidgeScaled = sklearn.model_selection.cross_val_score(modelRidge, HousingDa
 
 print("Ridge accuracy: %0.2f (+- %0.2f)",(scoreRidge.mean(),scoreRidge.std()*2))
 print("Ridge scaled accuracy: %0.2f (+- %0.2f)",(scoreRidgeScaled.mean(),scoreRidgeScaled.std()*2))
+
+crossValidationRidge = sklearn.model_selection.crossValidationCV(sklearn.linear_model.Ridge(), param_grid = {
+    'fit_intercept': [False, True],
+    'alpha': numpy.linspace(0, 10, 100)
+})
+crossValidationRidge.fit(HousingDataFrameScaled, HousingDataTarget)
+
+print("BEST FIT: ",str(crossValidationRidge.best_estimator_)
+print("BEST SCORE: %0.2f",crossValidationRidge.best_score_)
+
+gridSearchRidge = pandas.DataFrame(crossValidationRidge.cv_results)
+gridSearchRidge
+
+matplotlib.pyplot.figure(4, figsize = (20, 10))
+
+matplotlib.pyplot.subplot(121)
+matplotlib.pyplot.title("Ridge Alpha Parameter Optimization\nwith Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchRidge.loc[gs_ridge.param_fit_intercept == True, ['param_alpha']],
+         gridSearchRidge.loc[gridSearchRidge.param_fit_intercept == True, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == True")
+
+matplotlib.pyplot.subplot(122)
+matplotlib.pyplot.title("Ridge Alpha Parameter Optimization\nwithout Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchRidge.loc[gridSearchRidge.param_fit_intercept == False, ['param_alpha']],
+         gridSearchRidge.loc[gridSearchRidge.param_fit_intercept == False, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == False",
+         color = matplotlib.pyplot.cm.brg(128))
 
 
 #Lasso
@@ -95,6 +160,39 @@ scoreLassoScaled = sklearn.model_selection.cross_val_score(modelLasso, HousingDa
 print("Lasso accuracy: %0.2f (+- %0.2f)",(scoreLasso.mean(),scoreLasso.std()*2))
 print("Lasso scaled accuracy: %0.2f (+- %0.2f)",(scoreLassoScaled.mean(),scoreLassoScaled.std()*2))
 
+crossValidationLasso = sklearn.model_selection.crossValidationCV(sklearn.linear_model.Lasso(), param_grid = {
+    'fit_intercept': [False, True],
+    'alpha': numpy.linspace(0, 10, 100)
+})
+crossValidationLasso.fit(HousingDataFrameScaled, HousingDataTarget)
+
+print("BEST FIT: ", str(crossValidationLasso.best_estimator_)
+print("BEST SCORE: %0.2f", crossValidationLasso.best_score_)
+
+gridSearchLasso = pandas.DataFrame(crossValidationLasso.cv_results)
+gridSearchLasso
+
+matplotlib.pyplot.figure(4, figsize = (20, 10))
+
+matplotlib.pyplot.subplot(121)
+matplotlib.pyplot.title("Lasso Alpha Parameter Optimization\nwith Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchLasso.loc[gs_Lasso.param_fit_intercept == True, ['param_alpha']],
+         gridSearchLasso.loc[gridSearchLasso.param_fit_intercept == True, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == True")
+
+matplotlib.pyplot.subplot(122)
+matplotlib.pyplot.title("Lasso Alpha Parameter Optimization\nwithout Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchLasso.loc[gridSearchLasso.param_fit_intercept == False, ['param_alpha']],
+         gridSearchLasso.loc[gridSearchLasso.param_fit_intercept == False, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == False",
+         color = matplotlib.pyplot.cm.brg(128))
+
 
 #ElasticNet
 modelElasticNet = sklearn.linear_model.ElasticNet()
@@ -105,12 +203,38 @@ scoreElasticNetScaled = sklearn.model_selection.cross_val_score(modelElasticNet,
 print("Elastic Net accuracy: %0.2f (+- %0.2f)",(scoreElasticNet.mean(),scoreElasticNet.std()*2))
 print("Elastic Net scaled accuracy: %0.2f (+- %0.2f)",(scoreElasticNetScaled.mean(),scoreElasticNetScaled.std()*2))
 
+crossValidationElasticNet = sklearn.model_selection.crossValidationCV(sklearn.linear_model.ElasticNet(), param_grid = {
+    'fit_intercept': [False, True],
+    'alpha': numpy.linspace(0, 10, 100)
+})
+crossValidationElasticNet.fit(HousingDataFrameScaled, HousingDataTarget)
 
-#
-#4:
-#finding the best parameters with gridsearchcv
+print("BEST FIT: ",str(crossValidationElasticNet.best_estimator_)
+print("BEST SCORE: %0.2f", crossValidationElasticNet.best_score_)
 
+gridSearchElasticNet = pandas.DataFrame(crossValidationElasticNet.cv_results)
+gridSearchElasticNet
 
+matplotlib.pyplot.figure(4, figsize = (20, 10))
+
+matplotlib.pyplot.subplot(121)
+matplotlib.pyplot.title("Elastic Net Alpha Parameter Optimization\nwith Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchElasticNet.loc[gs_ElasticNet.param_fit_intercept == True, ['param_alpha']],
+         gridSearchElasticNet.loc[gridSearchElasticNet.param_fit_intercept == True, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == True")
+
+matplotlib.pyplot.subplot(122)
+matplotlib.pyplot.title("Elastic Net Alpha Parameter Optimization\nwithout Intercept Fitting")
+matplotlib.pyplot.xlabel("Alpha Value")
+matplotlib.pyplot.ylabel("Mean CV Test Score")
+matplotlib.pyplot.plot(gridSearchElasticNet.loc[gridSearchElasticNet.param_fit_intercept == False, ['param_alpha']],
+         gridSearchElasticNet.loc[gridSearchElasticNet.param_fit_intercept == False, ['mean_test_score']],
+         '.',
+         label = "fit_intercept == False",
+         color = matplotlib.pyplot.cm.brg(128))
 
 #show
 matplotlib.pyplot.show()
