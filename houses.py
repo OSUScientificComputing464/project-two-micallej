@@ -19,7 +19,8 @@ HousingDataTarget = pandas.Series(HousingDataSet.target)
 
 Scaler = sklearn.preprocessing.StandardScaler()
 Scaler.fit(HousingDataFrame)
-HousingDataFrameScaled = Scaler.transform(HousingDataFrame)
+HousingDataSetScaled = Scaler.transform(HousingDataFrame)
+HousingDataFrameScaled = pandas.DataFrame(HousingDataSetScaled, columns = HousingDataSet.feature_names)
 
 dataTrain, dataTest, targetTrain, targetTest = sklearn.model_selection.train_test_split(HousingDataFrame,HousingDataTarget,random_state=253)
 
@@ -57,7 +58,7 @@ for HousingNames in HousingDataFrame.columns:
 matplotlib.pyplot.figure(3,figsize=(20,10))
 
 matplotlib.pyplot.subplot(121)
-matplotlib.pyplot.title("Data (unscaled)")
+matplotlib.pyplot.title("Data (scaled)")
 matplotlib.pyplot.xlabel("Latitude")
 matplotlib.pyplot.ylabel("Home value")
 matplotlib.pyplot.plot(HousingDataFrameScaled['Latitude'],HousingDataTarget,'.')
@@ -69,19 +70,19 @@ matplotlib.pyplot.plot(HousingDataFrameScaled['Latitude'],HousingDataTarget,'.')
 modelLinearRegression = sklearn.linear_model.LinearRegression()
 
 scoreLinearRegression = sklearn.model_selection.cross_val_score(modelLinearRegression, HousingDataFrame,HousingDataTarget)
-scoreLinearRegressionScaled = sklearn.model_selection.cross_val_score(modelLinearRegression, HousingDataFrameScaled,HousingDataTarget)
+scoreLinearRegressionScaled = sklearn.model_selection.cross_val_score(modelLinearRegression, HousingDataSetScaled,HousingDataTarget)
 
-print("Linear Regression accuracy: %0.2f (+- %0.2f)",(scoreLinearRegression.mean(),scoreLinearRegression.std()*2))
-print("Linear Regression scaled accuracy: %0.2f (+- %0.2f)",(scoreLinearRegressionScaled.mean(),scoreLinearRegressionScaled.std()*2))
+print("Linear Regression accuracy: ",scoreLinearRegression.mean(),"(+/-",scoreLinearRegression.std()*2,")")
+print("Linear Regression scaled accuracy: ",scoreLinearRegressionScaled.mean(),"(+/-",scoreLinearRegressionScaled.std()*2,")")
 
-crossValidationLinearRegression = sklearn.model_selection.crossValidationCV(sklearn.linear_model.LinearRegression(), param_grid = {
+crossValidationLinearRegression = sklearn.model_selection.GridSearchCV(sklearn.linear_model.LinearRegression(), param_grid = {
     'fit_intercept': [False, True],
     'alpha': numpy.linspace(0, 10, 100)
 })
-crossValidationLinearRegression.fit(HousingDataFrameScaled, HousingDataTarget)
+crossValidationLinearRegression.fit(HousingDataSetScaled, HousingDataTarget)
 
-print("BEST FIT: ",str(crossValidationRidge.best_estimator_)
-print("BEST SCORE: %0.2f",crossValidationRidge.best_score_)
+print("BEST FIT: ",str(crossValidationRidge.best_estimator_))
+print("BEST SCORE: ",crossValidationRidge.best_score_)
 
 gridSearchLinearRegression = pandas.DataFrame(crossValidationLinearRegression.cv_results)
 gridSearchLinearRegression
@@ -112,19 +113,19 @@ matplotlib.pyplot.plot(gridSearchLinearRegression.loc[gridSearchLinearRegression
 modelRidge = sklearn.linear_model.Ridge()
 
 scoreRidge = sklearn.model_selection.cross_val_score(modelRidge, HousingDataFrame,HousingDataTarget)
-scoreRidgeScaled = sklearn.model_selection.cross_val_score(modelRidge, HousingDataFrameScaled,HousingDataTarget)
+scoreRidgeScaled = sklearn.model_selection.cross_val_score(modelRidge, HousingDataSetScaled,HousingDataTarget)
 
-print("Ridge accuracy: %0.2f (+- %0.2f)",(scoreRidge.mean(),scoreRidge.std()*2))
-print("Ridge scaled accuracy: %0.2f (+- %0.2f)",(scoreRidgeScaled.mean(),scoreRidgeScaled.std()*2))
+print("Ridge accuracy: ",scoreRidge.mean(),"(+/- ",scoreRidge.std()*2,")")
+print("Ridge scaled accuracy: ",scoreRidgeScaled.mean(),"(+/- ",scoreRidgeScaled.std()*2,")")
 
-crossValidationRidge = sklearn.model_selection.crossValidationCV(sklearn.linear_model.Ridge(), param_grid = {
+crossValidationRidge = sklearn.model_selection.GridSearchCV(sklearn.linear_model.Ridge(), param_grid = {
     'fit_intercept': [False, True],
     'alpha': numpy.linspace(0, 10, 100)
 })
-crossValidationRidge.fit(HousingDataFrameScaled, HousingDataTarget)
+crossValidationRidge.fit(HousingDataSetScaled, HousingDataTarget)
 
-print("BEST FIT: ",str(crossValidationRidge.best_estimator_)
-print("BEST SCORE: %0.2f",crossValidationRidge.best_score_)
+print("BEST FIT: ",str(crossValidationRidge.best_estimator_))
+print("BEST SCORE: ",crossValidationRidge.best_score_)
 
 gridSearchRidge = pandas.DataFrame(crossValidationRidge.cv_results)
 gridSearchRidge
@@ -155,19 +156,19 @@ matplotlib.pyplot.plot(gridSearchRidge.loc[gridSearchRidge.param_fit_intercept =
 modelLasso = sklearn.linear_model.Lasso()
 
 scoreLasso = sklearn.model_selection.cross_val_score(modelLasso, HousingDataFrame,HousingDataTarget)
-scoreLassoScaled = sklearn.model_selection.cross_val_score(modelLasso, HousingDataFrameScaled,HousingDataTarget)
+scoreLassoScaled = sklearn.model_selection.cross_val_score(modelLasso, HousingDataSetScaled,HousingDataTarget)
 
-print("Lasso accuracy: %0.2f (+- %0.2f)",(scoreLasso.mean(),scoreLasso.std()*2))
-print("Lasso scaled accuracy: %0.2f (+- %0.2f)",(scoreLassoScaled.mean(),scoreLassoScaled.std()*2))
+print("Lasso accuracy: ",scoreLasso.mean(),"(+/- ",scoreLasso.std()*2,")")
+print("Lasso scaled accuracy: ",scoreLassoScaled.mean(),"(+/- ",scoreLassoScaled.std()*2,")")
 
-crossValidationLasso = sklearn.model_selection.crossValidationCV(sklearn.linear_model.Lasso(), param_grid = {
+crossValidationLasso = sklearn.model_selection.GridSearchCV(sklearn.linear_model.Lasso(), param_grid = {
     'fit_intercept': [False, True],
     'alpha': numpy.linspace(0, 10, 100)
 })
-crossValidationLasso.fit(HousingDataFrameScaled, HousingDataTarget)
+crossValidationLasso.fit(HousingDataSetScaled, HousingDataTarget)
 
-print("BEST FIT: ", str(crossValidationLasso.best_estimator_)
-print("BEST SCORE: %0.2f", crossValidationLasso.best_score_)
+print("BEST FIT: ",str(crossValidationLasso.best_estimator_))
+print("BEST SCORE: ",crossValidationLasso.best_score_)
 
 gridSearchLasso = pandas.DataFrame(crossValidationLasso.cv_results)
 gridSearchLasso
@@ -198,19 +199,19 @@ matplotlib.pyplot.plot(gridSearchLasso.loc[gridSearchLasso.param_fit_intercept =
 modelElasticNet = sklearn.linear_model.ElasticNet()
 
 scoreElasticNet = sklearn.model_selection.cross_val_score(modelElasticNet, HousingDataFrame,HousingDataTarget)
-scoreElasticNetScaled = sklearn.model_selection.cross_val_score(modelElasticNet, HousingDataFrameScaled,HousingDataTarget)
+scoreElasticNetScaled = sklearn.model_selection.cross_val_score(modelElasticNet, HousingDataSetScaled,HousingDataTarget)
 
-print("Elastic Net accuracy: %0.2f (+- %0.2f)",(scoreElasticNet.mean(),scoreElasticNet.std()*2))
-print("Elastic Net scaled accuracy: %0.2f (+- %0.2f)",(scoreElasticNetScaled.mean(),scoreElasticNetScaled.std()*2))
+print("Elastic Net accuracy: ",scoreElasticNet.mean(),"(+/- ",scoreElasticNet.std()*2,")")
+print("Elastic Net scaled accuracy: ",scoreElasticNetScaled.mean(),"(+/-",scoreElasticNetScaled.std()*2,")")
 
-crossValidationElasticNet = sklearn.model_selection.crossValidationCV(sklearn.linear_model.ElasticNet(), param_grid = {
+crossValidationElasticNet = sklearn.model_selection.GridSearchCV(sklearn.linear_model.ElasticNet(), param_grid = {
     'fit_intercept': [False, True],
     'alpha': numpy.linspace(0, 10, 100)
 })
-crossValidationElasticNet.fit(HousingDataFrameScaled, HousingDataTarget)
+crossValidationElasticNet.fit(HousingDataSetScaled, HousingDataTarget)
 
-print("BEST FIT: ",str(crossValidationElasticNet.best_estimator_)
-print("BEST SCORE: %0.2f", crossValidationElasticNet.best_score_)
+print("BEST FIT: ",str(crossValidationElasticNet.best_estimator_))
+print("BEST SCORE: ",crossValidationElasticNet.best_score_)
 
 gridSearchElasticNet = pandas.DataFrame(crossValidationElasticNet.cv_results)
 gridSearchElasticNet
